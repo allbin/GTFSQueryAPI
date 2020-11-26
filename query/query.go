@@ -54,6 +54,6 @@ func (r *Repository) GetStops(lat string, lon string, radius string, maxstops st
 			" from stop_times JOIN stops s ON s.stop_id = stop_times.stop_id"+
 			" JOIN trips t on stop_times.trip_id = t.trip_id JOIN calendar_dates cd on t.service_id = cd.service_id"+
 			" WHERE s.stop_id in (select distinct stop_id from stops where st_dwithin(geography(st_point(stop_lat, stop_lon)), geography(st_point(%s,%s)), %s)"+
-			" order by stop_id limit %s)  AND ((date(current_timestamp + interval '- 4 hours') = cd.date"+
-			" OR date(current_timestamp + interval '20 hours') = cd.date)) order by date_string;", lat, lon, radius, maxstops))
+			" order by st_distance(st_point(stop_lat, stop_lon), st_point(%s, %s)) limit %s) AND ((date(current_timestamp + interval '- 4 hours') = cd.date"+
+			" OR date(current_timestamp + interval '20 hours') = cd.date)) order by date_string;", lat, lon, radius, lat, lon, maxstops))
 }
