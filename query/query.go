@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/allbin/gtfsQueryGoApi/config"
 	_ "github.com/lib/pq"
-	"log"
 	"os"
 	"strconv"
 )
@@ -40,7 +39,6 @@ func (r *Repository) Connect(c config.DatabaseConfiguration) error {
 	var err error
 	db_string := fmt.Sprintf("host=%s port=%d user=%s %s dbname=%s sslmode=disable",
 		host, port, user, passwordArg, db)
-	log.Print(db_string)
 	r.Db, err = sql.Open(c.Driver, db_string)
 	if err != nil {
 		return err
