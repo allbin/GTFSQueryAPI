@@ -26,10 +26,10 @@ func PlaceHandler(repo *query.Repository, w http.ResponseWriter, r *http.Request
 	lat, _ := strconv.ParseFloat(q.Get("lat"), 32)
 	lon, _ := strconv.ParseFloat(q.Get("lon"), 32)
 
-	radius, _ := strconv.ParseInt(q.Get("radius"), 10, 32)
+	radius, _ := strconv.ParseFloat(q.Get("radius"), 10)
 	radius = radius * 1000
 	if radius == 0 {
-		radius = d.Radius
+		radius = float64(d.Radius)
 	}
 
 	maxDepartures, _ := strconv.ParseInt(q.Get("maxDepartures"), 10, 32)

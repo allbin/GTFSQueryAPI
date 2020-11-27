@@ -22,6 +22,7 @@ func GetResult(r *query.Repository, la float64, lo float64, radius int, maxDepar
 
 func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result {
 	resultMap := hashmap.New(uintptr(maxStops * 2))
+	keysOrder := []string{}
 
 	for rows.Next() {
 		var row row
@@ -50,13 +51,16 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 
 			} else {
 				resultMap.Insert(row.id, rowToresult(row, arr, dep))
-
+				keysOrder = append(keysOrder, row.id)
 			}
 		}
 	}
 	var r []Result
-	for v := range resultMap.Iter() {
-		r = append(r, v.Value.(Result))
+	for _, key := range keysOrder {
+		value, exist := resultMap.Get(key);
+		if exist == true {
+			r = append(r, value.(Result))
+		}
 	}
 	return r
 }

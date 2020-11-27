@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/allbin/gtfsQueryGoApi/config"
 	_ "github.com/lib/pq"
+	"log"
 	"os"
 	"strconv"
 )
@@ -39,6 +40,7 @@ func (r *Repository) Connect(c config.DatabaseConfiguration) error {
 	var err error
 	db_string := fmt.Sprintf("host=%s port=%d user=%s %s dbname=%s sslmode=disable",
 		host, port, user, passwordArg, db)
+	log.Print(db_string)
 	r.Db, err = sql.Open(c.Driver, db_string)
 	if err != nil {
 		return err
@@ -49,11 +51,11 @@ func (r *Repository) Connect(c config.DatabaseConfiguration) error {
 
 func (r *Repository) GetStops(lat string, lon string, radius string, maxstops string) (*sql.Rows, error) {
 	return r.Db.Query(
-		fmt.Sprintf("SELECT st_distance(st_point(stop_lat, stop_lon), st_point(%s, %s)) as distance, s.stop_id as id, arrival_time, departure_time, stop_name as name, stop_lat as lat, stop_lon as lon,"+
+		fmt.Sprintf("SELECT s.stop_id as id, arrival_time, departure_time, stop_name as name, stop_lat as lat, stop_lon as lon,"+
 			" trip_headsign as headsign, date, (date::varchar || ' ' || departure_time) as date_string"+
 			" from stop_times JOIN stops s ON s.stop_id = stop_times.stop_id"+
 			" JOIN trips t on stop_times.trip_id = t.trip_id JOIN calendar_dates cd on t.service_id = cd.service_id"+
-			" WHERE s.stop_id in (select distinct stop_id from stops where st_dwithin(geography(st_point(stop_lat, stop_lon)), geography(st_point(%s,%s)), %s)"+
-			" order by distance limit %s)  AND ((date(current_timestamp + interval '- 4 hours') = cd.date"+
-			" OR date(current_timestamp + interval '20 hours') = cd.date)) order by date_string;", lat, lon, lat, lon, radius, maxstops))
+			" WHERE s.stop_id in (select stop_id from stops where st_dwithin(geography(st_point(stop_lat, stop_lon)), geography(st_point(%s,%s)), %s)"+
+			" order by st_distance(st_point(stop_lat, stop_lon), st_point(%s, %s)) limit %s) AND ((date(current_timestamp + interval '- 4 hours') = cd.date"+
+			" OR date(current_timestamp + interval '20 hours') = cd.date)) order by st_distance(st_point(stop_lat, stop_lon), st_point(%s, %s)), id, date_string;", lat, lon, radius, lat, lon, maxstops, lat, lon))
 }
