@@ -50,7 +50,7 @@ func (r *Repository) Connect(c config.DatabaseConfiguration) error {
 func (r *Repository) GetStops(lat string, lon string, radius string, maxstops string) (*sql.Rows, error) {
 	return r.Db.Query(
 		fmt.Sprintf("SELECT s.stop_id as id, arrival_time, departure_time, stop_name as name, stop_lat as lat, stop_lon as lon,"+
-			" trip_headsign as headsign, r.route_short_name as short_name, r.route_long_name as long_name, date, (date::varchar || ' ' || departure_time) as date_string"+
+			" trip_headsign as headsign, coalesce(r.route_short_name, '') as short_name, coalesce(r.route_long_name, '') as long_name, date, (date::varchar || ' ' || departure_time) as date_string"+
 			" from stop_times JOIN stops s ON s.stop_id = stop_times.stop_id"+
 			" JOIN trips t on stop_times.trip_id = t.trip_id JOIN calendar_dates cd on t.service_id = cd.service_id"+
       " JOIN routes r on t.route_id = r.route_id"+
