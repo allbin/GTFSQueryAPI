@@ -26,7 +26,7 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 
 	for rows.Next() {
 		var row row
-		if err := rows.Scan(&row.id, &row.arrivalTime, &row.departureTime, &row.name, &row.lat, &row.lon, &row.headsign, &row.date, &row.dateString); err != nil {
+		if err := rows.Scan(&row.id, &row.arrivalTime, &row.departureTime, &row.name, &row.lat, &row.lon, &row.headsign, &row.short_name, &row.long_name, &row.date, &row.dateString); err != nil {
 			log.Fatal(err)
 		}
 		loc_name := "Europe/Stockholm"
@@ -45,7 +45,7 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 			if exist == true {
 				v := value.(Result)
 				if len(v.Departures) < maxDepartures {
-					v.Departures = append(v.Departures, Departure{dep.Format("15:04:05"), arr.Format("15:04:05"), dep.Format("2006-01-02T15:04:05-07:00"), Trip{row.headsign}})
+					v.Departures = append(v.Departures, Departure{dep.Format("15:04:05"), arr.Format("15:04:05"), dep.Format("2006-01-02T15:04:05-07:00"), Trip{row.headsign, row.short_name, row.long_name}})
 					resultMap.Set(row.id, v)
 				}
 
@@ -68,5 +68,5 @@ func rowToresult(r row, arr time.Time, dep time.Time) Result {
 	return Result{
 		Stop{r.id, []string{r.lat, r.lon}, r.name},
 		[]Departure{{dep.Format("15:04:05"), arr.Format("15:04:05"), dep.Format("2006-01-02T15:04:05-07:00"),
-			Trip{r.headsign}}}}
+			Trip{r.headsign, r.short_name, r.long_name}}}}
 }

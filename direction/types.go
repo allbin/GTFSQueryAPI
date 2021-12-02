@@ -18,16 +18,20 @@ type Departure struct {
 }
 type Trip struct {
 	Headsign string `json:"headsign"`
+  RouteShortName string `json:"short_name"`
+  RouteLongName string `json:"long_name"`
 }
 
 type row struct {
-	id            string
-	arrivalTime   string
-	departureTime string
-	name          string
-	lat           string
-	lon           string
-	headsign      string
-	date          string
-	dateString    string
+	id                string
+	arrivalTime       string
+	departureTime     string
+	name              string
+	lat               string
+	lon               string
+	headsign          string
+  short_name        string
+  long_name         string
+	date              string
+	dateString        string
 }
