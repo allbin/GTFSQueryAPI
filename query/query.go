@@ -93,7 +93,7 @@ order by
     st_point(%s, %s)
   ),
   id,
-  date_string`, lon, lat, radius, lon, lat, max_stops, lon, lat)
+  date_string`, lon, lat, radius, lon, lat, maxstops, lon, lat)
   /*
 	return r.Db.Query(
 		fmt.Sprintf("SELECT s.stop_id as id, arrival_time, departure_time, stop_name as name, stop_lat as lat, stop_lon as lon,"+
