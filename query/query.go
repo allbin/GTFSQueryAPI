@@ -48,7 +48,7 @@ func (r *Repository) Connect(c config.DatabaseConfiguration) error {
 }
 
 func (r *Repository) GetStops(lat string, lon string, radius string, maxstops string) (*sql.Rows, error) {
-  return r.Db.Query("
+  return r.Db.Query(`
 with target_stops as (
   select * from stops where st_dwithin(
     geography(st_point(stop_lon, stop_lat)),
@@ -93,7 +93,7 @@ order by
     st_point(%s, %s)
   ),
   id,
-  date_string", lon, lat, radius, lon, lat, max_stops, lon, lat)
+  date_string`, lon, lat, radius, lon, lat, max_stops, lon, lat)
   /*
 	return r.Db.Query(
 		fmt.Sprintf("SELECT s.stop_id as id, arrival_time, departure_time, stop_name as name, stop_lat as lat, stop_lon as lon,"+
