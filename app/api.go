@@ -5,6 +5,7 @@ import (
 	"github.com/allbin/gtfsQueryGoApi/direction"
 	"github.com/allbin/gtfsQueryGoApi/query"
 	"github.com/gorilla/mux"
+  "github.com/gorilla/handlers"
 	geo "github.com/martinlindhe/google-geolocate"
 	"log"
 	"net/http"
@@ -36,7 +37,9 @@ func Run() {
 	r := mux.NewRouter()
 	r.Use(commonMiddleware)
 	r.HandleFunc("/departures/place", placeHandler).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8080", r))
+
+  corsAllowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(corsAllowedOrigins)(r)))
 }
 
 func placeHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,4 +51,13 @@ func commonMiddleware(next http.Handler) http.Handler {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodOptions {
+      w.Header().Add("Access-Control-Allow-Origin", "*")
+    }
+    w.WriteHeader(204);
+  })
 }
