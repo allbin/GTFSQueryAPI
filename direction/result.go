@@ -2,7 +2,6 @@ package direction
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/allbin/gtfsQueryGoApi/query"
 	"github.com/allbin/gtfsQueryGoApi/time_processing"
 	"github.com/cornelk/hashmap"
@@ -29,12 +28,7 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 		if err := rows.Scan(&row.id, &row.arrivalTime, &row.departureTime, &row.name, &row.lat, &row.lon, &row.headsign, &row.short_name, &row.long_name, &row.date, &row.dateString); err != nil {
 			log.Fatal(err)
 		}
-		loc_name := "Europe/Stockholm"
-		loc, err := time.LoadLocation(loc_name)
-		if err != nil {
-			panic(fmt.Sprintf("Problem loading location %s", loc_name))
-		}
-		timeDiff := time_processing.GetTimeDifference(loc, time.UTC)
+		timeDiff := time_processing.GetTimeDifference(time_processing.GetLocation(), time.UTC)
 		now := time.Now().In(time.UTC)
 		date, _ := time.Parse(time.RFC3339, row.date)
 		dep := time_processing.AddTime(date, row.departureTime).Add(time.Hour * time.Duration(-timeDiff))
@@ -57,7 +51,7 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 	}
 	var r []Result
 	for _, key := range keysOrder {
-		value, exist := resultMap.Get(key);
+		value, exist := resultMap.Get(key)
 		if exist == true {
 			r = append(r, value.(Result))
 		}

@@ -1,15 +1,18 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/allbin/gtfsQueryGoApi/config"
 	"github.com/allbin/gtfsQueryGoApi/direction"
 	"github.com/allbin/gtfsQueryGoApi/query"
+	"github.com/allbin/gtfsQueryGoApi/stop_departures"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-  "github.com/gorilla/handlers"
 	geo "github.com/martinlindhe/google-geolocate"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -37,13 +40,36 @@ func Run() {
 	r := mux.NewRouter()
 	r.Use(commonMiddleware)
 	r.HandleFunc("/departures/place", placeHandler).Methods("GET")
+	r.HandleFunc("/departures/stop", stopDeparturesHandler).Methods("GET")
 
-  corsAllowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	corsAllowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(corsAllowedOrigins)(r)))
 }
 
 func placeHandler(w http.ResponseWriter, r *http.Request) {
 	direction.PlaceHandler(repo, w, r, conf.Default, geoClient)
+}
+
+func stopDeparturesHandler(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	apiKey := os.Getenv("GTFS_QUERY_API_KEY")
+	if apiKey != "" {
+		k := q.Get("k")
+		if k != apiKey {
+			http.Error(w, "Missing k parameter(API KEY)", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	stopId := q.Get("id")
+
+	departureRows, err := stop_departures.GetStopDepartures(repo, strings.Split(stopId, ","))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(departureRows)
 }
 
 func commonMiddleware(next http.Handler) http.Handler {
@@ -53,11 +79,11 @@ func commonMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func corsMiddleware(next http.Handler) http.Handler {
-  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodOptions {
-      w.Header().Add("Access-Control-Allow-Origin", "*")
-    }
-    w.WriteHeader(204);
-  })
-}
+//func corsMiddleware(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		if r.Method == http.MethodOptions {
+//			w.Header().Add("Access-Control-Allow-Origin", "*")
+//		}
+//		w.WriteHeader(204)
+//	})
+//}
