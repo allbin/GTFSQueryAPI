@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/allbin/gtfsQueryGoApi/config"
 	"github.com/allbin/gtfsQueryGoApi/v2/storage"
@@ -23,14 +25,7 @@ func (r *apiRouter) Close(ctx context.Context) {
 }
 
 func NewRouter(ctx context.Context, r *mux.Router, c config.DatabaseConfiguration) (API, error) {
-	conn, err := pgx.Connect(ctx, fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s",
-		c.User,
-		c.Password,
-		c.Host,
-		c.Port,
-		c.Database,
-	))
+	conn, err := pgx.Connect(ctx, dbString(c))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
@@ -44,4 +39,35 @@ func NewRouter(ctx context.Context, r *mux.Router, c config.DatabaseConfiguratio
 	return &apiRouter{
 		conn: conn,
 	}, nil
+}
+
+func dbString(c config.DatabaseConfiguration) string {
+	passwordArg := ""
+	pass := os.Getenv("POSTGRES_PASSWORD")
+	if pass == "" {
+		pass = c.Password
+	}
+	host := os.Getenv("POSTGRES_HOST")
+	if host == "" {
+		host = c.Host
+	}
+	port, _ := strconv.Atoi(os.Getenv("POSTGRES_PORT"))
+	if port == 0 {
+		port = c.Port
+	}
+	user := os.Getenv("POSTGRES_USER")
+	if user == "" {
+		user = c.User
+	}
+	db := os.Getenv("POSTGRES_DB")
+	if db == "" {
+		db = c.Database
+	}
+	if len(pass) > 0 {
+		passwordArg = "password=" + pass
+	}
+	db_string := fmt.Sprintf("host=%s port=%d user=%s %s dbname=%s sslmode=disable",
+		host, port, user, passwordArg, db)
+
+	return db_string
 }
