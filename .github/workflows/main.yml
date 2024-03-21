@@ -40,13 +40,6 @@ jobs:
     - run: go build -o bin/main cmd/main.go
 
 
-    # Setup gcloud CLI
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-        version: '270.0.0'
-        service_account_email: ${{ secrets.GKE_EMAIL }}
-        service_account_key: ${{ secrets.GKE_KEY }}
-
     # Build the Docker images
     - name: Build Core
       run: |
