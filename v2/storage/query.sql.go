@@ -9,8 +9,78 @@ import (
 	"context"
 )
 
+const getStopDepartures = `-- name: GetStopDepartures :many
+select
+    st.stop_id::text AS id,
+    st.arrival_time::text AS arrival,
+    st.departure_time::text AS departure,
+    s.stop_name::text AS name,
+    s.stop_lat::double precision AS lat,
+    s.stop_lon::double precision AS lon,
+    t.trip_headsign::text AS headsign,
+    COALESCE(r.route_short_name, '')::text AS short_name,
+    COALESCE(r.route_long_name, '')::text AS long_name
+FROM
+    stop_times st
+        INNER JOIN stops s ON st.stop_id = s.stop_id
+        INNER JOIN trips t ON st.trip_id = t.trip_id
+        INNER JOIN routes r ON t.route_id = r.route_id
+WHERE
+    s.stop_id = $1
+ORDER BY
+    departure
+limit $2::bigint
+`
+
+type GetStopDeparturesParams struct {
+	StopID string
+	Lim    int64
+}
+
+type GetStopDeparturesRow struct {
+	ID        string
+	Arrival   string
+	Departure string
+	Name      string
+	Lat       float64
+	Lon       float64
+	Headsign  string
+	ShortName string
+	LongName  string
+}
+
+func (q *Queries) GetStopDepartures(ctx context.Context, arg GetStopDeparturesParams) ([]GetStopDeparturesRow, error) {
+	rows, err := q.db.Query(ctx, getStopDepartures, arg.StopID, arg.Lim)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStopDeparturesRow
+	for rows.Next() {
+		var i GetStopDeparturesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Arrival,
+			&i.Departure,
+			&i.Name,
+			&i.Lat,
+			&i.Lon,
+			&i.Headsign,
+			&i.ShortName,
+			&i.LongName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStops = `-- name: GetStops :many
-select stop_id, stop_name, stop_lat, stop_lon, location_type from stops limit 50
+select stop_id, stop_name, stop_lat, stop_lon, location_type, geom from stops limit 50
 `
 
 func (q *Queries) GetStops(ctx context.Context) ([]Stop, error) {
@@ -28,6 +98,7 @@ func (q *Queries) GetStops(ctx context.Context) ([]Stop, error) {
 			&i.StopLat,
 			&i.StopLon,
 			&i.LocationType,
+			&i.Geom,
 		); err != nil {
 			return nil, err
 		}
@@ -40,7 +111,7 @@ func (q *Queries) GetStops(ctx context.Context) ([]Stop, error) {
 }
 
 const getStopsNearby = `-- name: GetStopsNearby :many
-select stop_id, stop_name, stop_lat, stop_lon, location_type
+select stop_id, stop_name, stop_lat, stop_lon, location_type, geom
 from stops
 where st_dwithin(
     geography(st_point(stop_lon, stop_lat)),
@@ -81,6 +152,7 @@ func (q *Queries) GetStopsNearby(ctx context.Context, arg GetStopsNearbyParams) 
 			&i.StopLat,
 			&i.StopLon,
 			&i.LocationType,
+			&i.Geom,
 		); err != nil {
 			return nil, err
 		}

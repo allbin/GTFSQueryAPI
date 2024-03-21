@@ -8,10 +8,60 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Agency struct {
+	AgencyID       string
+	AgencyName     pgtype.Text
+	AgencyUrl      pgtype.Text
+	AgencyTimezone pgtype.Text
+	AgencyLang     pgtype.Text
+}
+
+type CalendarDate struct {
+	ServiceID     string
+	Date          pgtype.Date
+	ExceptionType pgtype.Int2
+}
+
+type Route struct {
+	RouteID        string
+	AgencyID       pgtype.Text
+	RouteShortName pgtype.Text
+	RouteLongName  pgtype.Text
+	RouteType      pgtype.Text
+	RouteUrl       pgtype.Text
+}
+
+type SpatialRefSy struct {
+	Srid      int32
+	AuthName  pgtype.Text
+	AuthSrid  pgtype.Int4
+	Srtext    pgtype.Text
+	Proj4text pgtype.Text
+}
+
 type Stop struct {
 	StopID       string
 	StopName     string
 	StopLat      pgtype.Numeric
 	StopLon      pgtype.Numeric
 	LocationType pgtype.Int2
+	Geom         string
+}
+
+type StopTime struct {
+	TripID        pgtype.Text
+	ArrivalTime   string
+	DepartureTime string
+	StopID        pgtype.Text
+	StopSequence  int32
+	PickupType    pgtype.Int2
+	DropOffType   pgtype.Int2
+}
+
+type Trip struct {
+	RouteID       pgtype.Text
+	ServiceID     string
+	TripID        string
+	TripHeadsign  pgtype.Text
+	TripShortName pgtype.Text
 }
