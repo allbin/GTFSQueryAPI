@@ -8,6 +8,7 @@ sql:
         package: "storage"
         out: "v2/storage"
         sql_package: "pgx/v5"
+        emit_json_tags: true
         overrides:
           - column: stops.geom
             go_type: string

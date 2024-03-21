@@ -28,43 +28,44 @@ func (q *Queries) GetStop(ctx context.Context, stopID string) (Stop, error) {
 }
 
 const getStopDepartures = `-- name: GetStopDepartures :many
-select
-    st.stop_id::text AS id,
-    st.arrival_time::text AS arrival,
-    st.departure_time::text AS departure,
-    s.stop_name::text AS name,
-    s.stop_lat::double precision AS lat,
-    s.stop_lon::double precision AS lon,
-    t.trip_headsign::text AS headsign,
-    COALESCE(r.route_short_name, '')::text AS short_name,
-    COALESCE(r.route_long_name, '')::text AS long_name
-FROM
-    stop_times st
-        INNER JOIN stops s ON st.stop_id = s.stop_id
-        INNER JOIN trips t ON st.trip_id = t.trip_id
-        INNER JOIN routes r ON t.route_id = r.route_id
-WHERE
-    s.stop_id = $1
-ORDER BY
-    departure
-limit $2::bigint
+SELECT st.stop_id::text                       AS id,
+       cd.date::text                          AS date,
+       st.arrival_time::text                  AS arrival,
+       st.departure_time::text                AS departure,
+       s.stop_name::text                      AS name,
+       s.stop_lat::double precision           AS lat,
+       s.stop_lon::double precision           AS lon,
+       t.trip_headsign::text                  AS headsign,
+       COALESCE(r.route_short_name, '')::text AS short_name,
+       COALESCE(r.route_long_name, '')::text  AS long_name
+FROM stop_times st
+         INNER JOIN stops s ON st.stop_id = s.stop_id
+         INNER JOIN trips t ON st.trip_id = t.trip_id
+         INNER JOIN routes r ON t.route_id = r.route_id
+         INNER JOIN calendar_dates cd ON t.service_id = cd.service_id
+WHERE s.stop_id = $1
+  AND cd.date IN (current_date, current_date + interval '1 day')
+ORDER BY date,
+         departure
+LIMIT $2::bigint
 `
 
 type GetStopDeparturesParams struct {
-	StopID string
-	Lim    int64
+	StopID string `json:"stop_id"`
+	Lim    int64  `json:"lim"`
 }
 
 type GetStopDeparturesRow struct {
-	ID        string
-	Arrival   string
-	Departure string
-	Name      string
-	Lat       float64
-	Lon       float64
-	Headsign  string
-	ShortName string
-	LongName  string
+	ID        string  `json:"id"`
+	Date      string  `json:"date"`
+	Arrival   string  `json:"arrival"`
+	Departure string  `json:"departure"`
+	Name      string  `json:"name"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
+	Headsign  string  `json:"headsign"`
+	ShortName string  `json:"short_name"`
+	LongName  string  `json:"long_name"`
 }
 
 func (q *Queries) GetStopDepartures(ctx context.Context, arg GetStopDeparturesParams) ([]GetStopDeparturesRow, error) {
@@ -78,6 +79,7 @@ func (q *Queries) GetStopDepartures(ctx context.Context, arg GetStopDeparturesPa
 		var i GetStopDeparturesRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Date,
 			&i.Arrival,
 			&i.Departure,
 			&i.Name,
@@ -144,10 +146,10 @@ limit $4::bigint
 `
 
 type GetStopsNearbyParams struct {
-	Lon    float64
-	Lat    float64
-	Radius float64
-	Lim    int64
+	Lon    float64 `json:"lon"`
+	Lat    float64 `json:"lat"`
+	Radius float64 `json:"radius"`
+	Lim    int64   `json:"lim"`
 }
 
 func (q *Queries) GetStopsNearby(ctx context.Context, arg GetStopsNearbyParams) ([]Stop, error) {

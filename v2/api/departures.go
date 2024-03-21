@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/allbin/gtfsQueryGoApi/v2/storage"
@@ -46,16 +45,14 @@ func getDeparturesHandler(queries *storage.Queries) http.HandlerFunc {
 		}
 
 		var departures []Departure
-		now := time.Now().Local()
-
 		for _, stopDeparture := range stopDepartures {
-			arv, err := GtfsTime(stopDeparture.Arrival).Time(now)
+			arv, err := gtfsTime(stopDeparture.Date, stopDeparture.Arrival)
 			if err != nil {
 				log.Printf("unable to parse arrival time: %v", err)
 				continue
 			}
 
-			dep, err := GtfsTime(stopDeparture.Departure).Time(now)
+			dep, err := gtfsTime(stopDeparture.Date, stopDeparture.Departure)
 			if err != nil {
 				log.Printf("unable to parse departure time: %v", err)
 				continue
@@ -80,41 +77,4 @@ func getDeparturesHandler(queries *storage.Queries) http.HandlerFunc {
 		err = json.NewEncoder(w).Encode(departures)
 
 	}
-}
-
-type GtfsTime string
-
-func (t GtfsTime) Time(offset time.Time) (time.Time, error) {
-	parts := strings.Split(string(t), ":")
-
-	if len(parts) != 3 {
-		return time.Time{}, fmt.Errorf("invalid time format")
-	}
-
-	hour, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid hour")
-	}
-
-	minute, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid minute")
-	}
-
-	second, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid second")
-	}
-
-	year, month, day := offset.Date()
-	timestamp := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
-	timestamp = timestamp.Add(time.Duration(hour) * time.Hour)
-	timestamp = timestamp.Add(time.Duration(minute) * time.Minute)
-	timestamp = timestamp.Add(time.Duration(second) * time.Second)
-
-	if timestamp.Before(offset) {
-		timestamp = timestamp.AddDate(0, 0, 1)
-	}
-
-	return timestamp, nil
 }

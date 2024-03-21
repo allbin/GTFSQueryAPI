@@ -9,59 +9,59 @@ import (
 )
 
 type Agency struct {
-	AgencyID       string
-	AgencyName     pgtype.Text
-	AgencyUrl      pgtype.Text
-	AgencyTimezone pgtype.Text
-	AgencyLang     pgtype.Text
+	AgencyID       string      `json:"agency_id"`
+	AgencyName     pgtype.Text `json:"agency_name"`
+	AgencyUrl      pgtype.Text `json:"agency_url"`
+	AgencyTimezone pgtype.Text `json:"agency_timezone"`
+	AgencyLang     pgtype.Text `json:"agency_lang"`
 }
 
 type CalendarDate struct {
-	ServiceID     string
-	Date          pgtype.Date
-	ExceptionType pgtype.Int2
+	ServiceID     string      `json:"service_id"`
+	Date          pgtype.Date `json:"date"`
+	ExceptionType pgtype.Int2 `json:"exception_type"`
 }
 
 type Route struct {
-	RouteID        string
-	AgencyID       pgtype.Text
-	RouteShortName pgtype.Text
-	RouteLongName  pgtype.Text
-	RouteType      pgtype.Text
-	RouteUrl       pgtype.Text
+	RouteID        string      `json:"route_id"`
+	AgencyID       pgtype.Text `json:"agency_id"`
+	RouteShortName pgtype.Text `json:"route_short_name"`
+	RouteLongName  pgtype.Text `json:"route_long_name"`
+	RouteType      pgtype.Text `json:"route_type"`
+	RouteUrl       pgtype.Text `json:"route_url"`
 }
 
 type SpatialRefSy struct {
-	Srid      int32
-	AuthName  pgtype.Text
-	AuthSrid  pgtype.Int4
-	Srtext    pgtype.Text
-	Proj4text pgtype.Text
+	Srid      int32       `json:"srid"`
+	AuthName  pgtype.Text `json:"auth_name"`
+	AuthSrid  pgtype.Int4 `json:"auth_srid"`
+	Srtext    pgtype.Text `json:"srtext"`
+	Proj4text pgtype.Text `json:"proj4text"`
 }
 
 type Stop struct {
-	StopID       string
-	StopName     string
-	StopLat      pgtype.Numeric
-	StopLon      pgtype.Numeric
-	LocationType pgtype.Int2
-	Geom         string
+	StopID       string         `json:"stop_id"`
+	StopName     string         `json:"stop_name"`
+	StopLat      pgtype.Numeric `json:"stop_lat"`
+	StopLon      pgtype.Numeric `json:"stop_lon"`
+	LocationType pgtype.Int2    `json:"location_type"`
+	Geom         string         `json:"geom"`
 }
 
 type StopTime struct {
-	TripID        pgtype.Text
-	ArrivalTime   string
-	DepartureTime string
-	StopID        pgtype.Text
-	StopSequence  int32
-	PickupType    pgtype.Int2
-	DropOffType   pgtype.Int2
+	TripID        pgtype.Text `json:"trip_id"`
+	ArrivalTime   string      `json:"arrival_time"`
+	DepartureTime string      `json:"departure_time"`
+	StopID        pgtype.Text `json:"stop_id"`
+	StopSequence  int32       `json:"stop_sequence"`
+	PickupType    pgtype.Int2 `json:"pickup_type"`
+	DropOffType   pgtype.Int2 `json:"drop_off_type"`
 }
 
 type Trip struct {
-	RouteID       pgtype.Text
-	ServiceID     string
-	TripID        string
-	TripHeadsign  pgtype.Text
-	TripShortName pgtype.Text
+	RouteID       pgtype.Text `json:"route_id"`
+	ServiceID     string      `json:"service_id"`
+	TripID        string      `json:"trip_id"`
+	TripHeadsign  pgtype.Text `json:"trip_headsign"`
+	TripShortName pgtype.Text `json:"trip_short_name"`
 }
