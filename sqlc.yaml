@@ -1,0 +1,16 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "storage"
+        out: "v2/storage"
+        sql_package: "pgx/v5"
+        overrides:
+          - column: stops.geom
+            go_type: string
+        #       import: github.com/twpayne/go-geom
+        #       type: Point
+        #     nullable: true
