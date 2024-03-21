@@ -3,12 +3,13 @@ package direction
 import (
 	"database/sql"
 	"fmt"
-	"github.com/allbin/gtfsQueryGoApi/query"
-	"github.com/allbin/gtfsQueryGoApi/time_processing"
-	"github.com/cornelk/hashmap"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/allbin/gtfsQueryGoApi/query"
+	"github.com/allbin/gtfsQueryGoApi/time_processing"
+	"github.com/cornelk/hashmap"
 )
 
 func GetResult(r *query.Repository, la float64, lo float64, radius int, maxDepartures int, maxStops int) []Result {
@@ -21,7 +22,7 @@ func GetResult(r *query.Repository, la float64, lo float64, radius int, maxDepar
 }
 
 func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result {
-	resultMap := hashmap.New(uintptr(maxStops * 2))
+	resultMap := hashmap.NewSized[string, Result](uintptr(maxStops * 2))
 	keysOrder := []string{}
 
 	for rows.Next() {
@@ -43,10 +44,9 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 		if dep.After(now) {
 			value, exist := resultMap.Get(row.id)
 			if exist == true {
-				v := value.(Result)
-				if len(v.Departures) < maxDepartures {
-					v.Departures = append(v.Departures, Departure{dep.Format("15:04:05"), arr.Format("15:04:05"), dep.Format("2006-01-02T15:04:05-07:00"), Trip{row.headsign, row.short_name, row.long_name}})
-					resultMap.Set(row.id, v)
+				if len(value.Departures) < maxDepartures {
+					value.Departures = append(value.Departures, Departure{dep.Format("15:04:05"), arr.Format("15:04:05"), dep.Format("2006-01-02T15:04:05-07:00"), Trip{row.headsign, row.short_name, row.long_name}})
+					resultMap.Set(row.id, value)
 				}
 
 			} else {
@@ -57,9 +57,9 @@ func groupAndSortRows(rows *sql.Rows, maxStops int, maxDepartures int) []Result 
 	}
 	var r []Result
 	for _, key := range keysOrder {
-		value, exist := resultMap.Get(key);
+		value, exist := resultMap.Get(key)
 		if exist == true {
-			r = append(r, value.(Result))
+			r = append(r, value)
 		}
 	}
 	return r
