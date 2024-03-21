@@ -22,7 +22,7 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-        - image: eu.gcr.io/allbinary-204807/gtfs/go-gtfs-query-api
+        - image: europe-west3-docker.pkg.dev/allbinary-204807/gtfs/gtfs-query-api
           name: go-gtfs-query-api
           envFrom:
             - secretRef:

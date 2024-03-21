@@ -12,7 +12,7 @@ env:
   GITHUB_SHA: ${{ github.sha }}
   GKE_ZONE: europe-west3-a
   GKE_CLUSTER: ab-cluster-1
-  IMAGE_BASE: eu.gcr.io/${{ secrets.GKE_PROJECT }}/gtfs
+  IMAGE_BASE: europe-west3-docker.pkg.dev/${{ secrets.GKE_PROJECT }}/gtfs
   GO111MODULE: on
   CGO_ENABLED: 0
 
@@ -43,7 +43,7 @@ jobs:
     # Build the Docker images
     - name: Build Core
       run: |
-        docker build -t "$IMAGE_BASE"/go-gtfs-query-api:"$GITHUB_SHA" \
+        docker build -t "$IMAGE_BASE"/gtfs-query-api:"$GITHUB_SHA" \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" \
           -f Dockerfile .
@@ -62,10 +62,9 @@ jobs:
     - name: 'GCloud Authenticate Docker'
       run: gcloud auth configure-docker europe-west3-docker.pkg.dev
 
-
     # Push the Docker images to Google Container Registry
     - name: Publish
       run: |
-        docker tag "$IMAGE_BASE"/go-gtfs-query-api:"$GITHUB_SHA" "$IMAGE_BASE"/go-gtfs-query-api
-        docker push "$IMAGE_BASE"/go-gtfs-query-api:"$GITHUB_SHA"
-        docker push "$IMAGE_BASE"/go-gtfs-query-api
+        docker tag "$IMAGE_BASE"/gtfs-query-api:"$GITHUB_SHA" "$IMAGE_BASE"/gtfs-query-api
+        docker push "$IMAGE_BASE"/gtfs-query-api:"$GITHUB_SHA"
+        docker push "$IMAGE_BASE"/gtfs-query-api
