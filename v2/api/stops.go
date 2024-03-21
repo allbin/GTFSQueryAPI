@@ -10,25 +10,47 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func getStopHandler(queries *storage.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		id := params["stop_id"]
+
+
+		if id == "" {
+			http.Error(w, "missing stop_id", http.StatusBadRequest)
+			return
+		}
+
+		stop, err := queries.GetStop(r.Context(), id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("unable to get stop %s: %v", id, err), http.StatusInternalServerError)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(stop)
+	}
+}
+
 func getStopsHandler(queries *storage.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
-		params := mux.Vars(r)
+		// get longitude and latitude from query parameters
+		lon := r.URL.Query().Get("lon")
+		lat := r.URL.Query().Get("lat")
 
-		if params["lon"] == "" || params["lat"] == "" {
+		var arg storage.GetStopsNearbyParams
+		if lon == "" || lat == "" {
 			http.Error(w, "missing longitude or latitude", http.StatusBadRequest)
 			return
 		}
 
-		var arg storage.GetStopsNearbyParams
-
-		arg.Lon, err = strconv.ParseFloat(params["lon"], 64)
+		arg.Lon, err = strconv.ParseFloat(lon, 64)
 		if err != nil {
 			http.Error(w, "invalid longitude", http.StatusBadRequest)
 			return
 		}
 
-		arg.Lat, err = strconv.ParseFloat(params["lat"], 64)
+		arg.Lat, err = strconv.ParseFloat(lat, 64)
 		if err != nil {
 			http.Error(w, "invalid latitude", http.StatusBadRequest)
 			return

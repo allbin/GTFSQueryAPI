@@ -9,6 +9,24 @@ import (
 	"context"
 )
 
+const getStop = `-- name: GetStop :one
+select stop_id, stop_name, stop_lat, stop_lon, location_type, geom from stops where stop_id = $1
+`
+
+func (q *Queries) GetStop(ctx context.Context, stopID string) (Stop, error) {
+	row := q.db.QueryRow(ctx, getStop, stopID)
+	var i Stop
+	err := row.Scan(
+		&i.StopID,
+		&i.StopName,
+		&i.StopLat,
+		&i.StopLon,
+		&i.LocationType,
+		&i.Geom,
+	)
+	return i, err
+}
+
 const getStopDepartures = `-- name: GetStopDepartures :many
 select
     st.stop_id::text AS id,

@@ -9,11 +9,11 @@ import (
 
 func TestGTFSTime(t *testing.T) {
 	year, month, day := time.Now().Local().Date()
-	today := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
+	today := time.Date(year, month, day, 12, 0, 0, 0, time.Local)
 
 	t.Run("Simple", func(t *testing.T) {
 		input := GtfsTime("12:34:56")
-		ts, err := input.Time(year, int(month), day)
+		ts, err := input.Time(today)
 
 		assert.NoError(t, err)
 		assert.Equal(t, year, ts.Year())
@@ -26,7 +26,7 @@ func TestGTFSTime(t *testing.T) {
 
 	t.Run("Afternoon", func(t *testing.T) {
 		input := GtfsTime("22:34:56")
-		ts, err := input.Time(year, int(month), day)
+		ts, err := input.Time(today)
 
 		assert.NoError(t, err)
 		assert.Equal(t, year, ts.Year())
@@ -39,13 +39,20 @@ func TestGTFSTime(t *testing.T) {
 
 	t.Run("Next Day", func(t *testing.T) {
 		input := GtfsTime("26:34:56")
-		ts, err := input.Time(year, int(month), day)
+		ts, err := input.Time(today)
 
-		expected := today.AddDate(0, 0, 1)
-		expected = expected.Add(2 * time.Hour)
-		expected = expected.Add(34 * time.Minute)
-		expected = expected.Add(56 * time.Second)
+		expected := time.Date(year, month, day, 2, 34, 56, 0, time.Local)
+		expected = expected.AddDate(0, 0, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, ts)
+	})
 
+	t.Run("Next Day Wrapped", func(t *testing.T) {
+		input := GtfsTime("11:34:56")
+		ts, err := input.Time(today)
+
+		expected := time.Date(year, month, day, 11, 34, 56, 0, time.Local)
+		expected = expected.AddDate(0, 0, 1)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, ts)
 	})

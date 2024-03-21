@@ -15,6 +15,9 @@ order by st_distance(
 )
 limit @lim::bigint;
 
+-- name: GetStop :one
+select * from stops where stop_id = @stop_id;
+
 -- name: GetStopDepartures :many
 select
     st.stop_id::text AS id,
