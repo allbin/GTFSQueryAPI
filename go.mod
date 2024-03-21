@@ -1,8 +1,6 @@
 module github.com/allbin/gtfsQueryGoApi
 
-go 1.21
-
-toolchain go1.22.1
+go 1.22
 
 require (
 	github.com/cornelk/hashmap v1.0.8
