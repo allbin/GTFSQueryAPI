@@ -35,6 +35,7 @@ func NewRouter(ctx context.Context, r *mux.Router, c config.DatabaseConfiguratio
 	r.HandleFunc("/stops", getStopsHandler(queries)).Methods("GET")
 	r.HandleFunc("/stops/{stop_id}", getStopHandler(queries)).Methods("GET")
 	r.HandleFunc("/stops/{stop_id}/departures", getDeparturesHandler(queries)).Methods("GET")
+	r.HandleFunc("/departures", getDeparturesForStopsHandler(queries)).Methods("GET")
 
 	return &apiRouter{
 		conn: conn,

@@ -9,6 +9,78 @@ import (
 	"context"
 )
 
+const getDeparturesForStops = `-- name: GetDeparturesForStops :many
+SELECT st.stop_id::text                       AS id,
+       cd.date::text                          AS date,
+       st.arrival_time::text                  AS arrival,
+       st.departure_time::text                AS departure,
+       s.stop_name::text                      AS name,
+       s.stop_lat::double precision           AS lat,
+       s.stop_lon::double precision           AS lon,
+       t.trip_headsign::text                  AS headsign,
+       COALESCE(r.route_short_name, '')::text AS short_name,
+       COALESCE(r.route_long_name, '')::text  AS long_name
+FROM stop_times st
+         INNER JOIN stops s ON st.stop_id = s.stop_id
+         INNER JOIN trips t ON st.trip_id = t.trip_id
+         INNER JOIN routes r ON t.route_id = r.route_id
+         INNER JOIN calendar_dates cd ON t.service_id = cd.service_id
+WHERE s.stop_id = ANY($1::text[])
+  AND cd.date IN (current_date, current_date + interval '1 day')
+ORDER BY date,
+         departure
+LIMIT $2::bigint
+`
+
+type GetDeparturesForStopsParams struct {
+	StopID []string `json:"stop_id"`
+	Lim    int64    `json:"lim"`
+}
+
+type GetDeparturesForStopsRow struct {
+	ID        string  `json:"id"`
+	Date      string  `json:"date"`
+	Arrival   string  `json:"arrival"`
+	Departure string  `json:"departure"`
+	Name      string  `json:"name"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
+	Headsign  string  `json:"headsign"`
+	ShortName string  `json:"short_name"`
+	LongName  string  `json:"long_name"`
+}
+
+func (q *Queries) GetDeparturesForStops(ctx context.Context, arg GetDeparturesForStopsParams) ([]GetDeparturesForStopsRow, error) {
+	rows, err := q.db.Query(ctx, getDeparturesForStops, arg.StopID, arg.Lim)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetDeparturesForStopsRow
+	for rows.Next() {
+		var i GetDeparturesForStopsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Date,
+			&i.Arrival,
+			&i.Departure,
+			&i.Name,
+			&i.Lat,
+			&i.Lon,
+			&i.Headsign,
+			&i.ShortName,
+			&i.LongName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStop = `-- name: GetStop :one
 select stop_id, stop_name, stop_lat, stop_lon, location_type, geom from stops where stop_id = $1
 `
