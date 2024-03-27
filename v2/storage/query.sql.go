@@ -29,13 +29,7 @@ WHERE s.stop_id = ANY($1::text[])
   AND cd.date IN (current_date, current_date + interval '1 day')
 ORDER BY date,
          departure
-LIMIT $2::bigint
 `
-
-type GetDeparturesForStopsParams struct {
-	StopID []string `json:"stop_id"`
-	Lim    int64    `json:"lim"`
-}
 
 type GetDeparturesForStopsRow struct {
 	ID        string  `json:"id"`
@@ -50,8 +44,8 @@ type GetDeparturesForStopsRow struct {
 	LongName  string  `json:"long_name"`
 }
 
-func (q *Queries) GetDeparturesForStops(ctx context.Context, arg GetDeparturesForStopsParams) ([]GetDeparturesForStopsRow, error) {
-	rows, err := q.db.Query(ctx, getDeparturesForStops, arg.StopID, arg.Lim)
+func (q *Queries) GetDeparturesForStops(ctx context.Context, stopID []string) ([]GetDeparturesForStopsRow, error) {
+	rows, err := q.db.Query(ctx, getDeparturesForStops, stopID)
 	if err != nil {
 		return nil, err
 	}

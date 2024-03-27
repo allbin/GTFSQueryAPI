@@ -59,5 +59,4 @@ FROM stop_times st
 WHERE s.stop_id = ANY(@stop_id::text[])
   AND cd.date IN (current_date, current_date + interval '1 day')
 ORDER BY date,
-         departure
-LIMIT @lim::bigint;
+         departure;

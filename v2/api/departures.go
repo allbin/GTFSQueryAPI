@@ -89,27 +89,14 @@ func getDeparturesHandler(queries *storage.Queries) http.HandlerFunc {
 func getDeparturesForStopsHandler(queries *storage.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
-		//get ids from query string
-		stopIds := r.URL.Query().Get("stop_id")
-		if len(stopIds) == 0 {
+
+		stopIds := strings.Split(r.URL.Query().Get("stop_id"), ",")
+		if len(stopIds) == 0 || stopIds[0] == "" {
 			http.Error(w, "missing stop_id", http.StatusBadRequest)
 			return
 		}
 
-		var arg storage.GetDeparturesForStopsParams
-		arg.StopID = strings.Split(stopIds, ",")
-		if len(arg.StopID) == 0 {
-			http.Error(w, "missing stop_id", http.StatusBadRequest)
-			return
-		}
-
-		if r.URL.Query().Get("limit") != "" {
-			arg.Lim, err = strconv.ParseInt(r.URL.Query().Get("limit"), 10, 32)
-		} else {
-			arg.Lim = 1000
-		}
-
-		stopDepartures, err := queries.GetDeparturesForStops(r.Context(), arg)
+		stopDepartures, err := queries.GetDeparturesForStops(r.Context(), stopIds)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("unable to get departures: %v", err), http.StatusInternalServerError)
 		}
