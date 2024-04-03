@@ -206,7 +206,8 @@ where st_dwithin(
 )
 order by st_distance(
     st_point(stop_lon, stop_lat),
-    st_point($1::double precision, $2::double precision)
+    st_point($1::double precision, $2::double precision),
+    true
 )
 limit $4::bigint
 `

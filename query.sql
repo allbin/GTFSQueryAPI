@@ -11,7 +11,8 @@ where st_dwithin(
 )
 order by st_distance(
     st_point(stop_lon, stop_lat),
-    st_point(@lon::double precision, @lat::double precision)
+    st_point(@lon::double precision, @lat::double precision),
+    true
 )
 limit @lim::bigint;
 
