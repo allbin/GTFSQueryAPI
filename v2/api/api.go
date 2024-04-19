@@ -9,7 +9,7 @@ import (
 	"github.com/allbin/gtfsQueryGoApi/config"
 	"github.com/allbin/gtfsQueryGoApi/v2/storage"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type API interface {
@@ -17,15 +17,16 @@ type API interface {
 }
 
 type apiRouter struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func (r *apiRouter) Close(ctx context.Context) {
-	r.conn.Close(ctx)
+	r.conn.Close()
 }
 
 func NewRouter(ctx context.Context, r *mux.Router, c config.DatabaseConfiguration) (API, error) {
-	conn, err := pgx.Connect(ctx, dbString(c))
+	conn, err := pgxpool.New(ctx, dbString(c))
+	// conn, err := pgx.Connect(ctx, dbString(c))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
