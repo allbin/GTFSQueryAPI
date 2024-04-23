@@ -26,7 +26,6 @@ func (r *apiRouter) Close(ctx context.Context) {
 
 func NewRouter(ctx context.Context, r *mux.Router, c config.DatabaseConfiguration) (API, error) {
 	conn, err := pgxpool.New(ctx, dbString(c))
-	// conn, err := pgx.Connect(ctx, dbString(c))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}

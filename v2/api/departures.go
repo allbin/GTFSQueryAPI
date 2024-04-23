@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"slices"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/allbin/gtfsQueryGoApi/v2/storage"
+	"github.com/charmbracelet/log"
 	"github.com/gorilla/mux"
 )
 
@@ -55,13 +55,13 @@ func getDeparturesHandler(queries *storage.Queries) http.HandlerFunc {
 		for _, stopDeparture := range stopDepartures {
 			arv, err := gtfsTime(stopDeparture.Date, stopDeparture.Arrival)
 			if err != nil {
-				log.Printf("unable to parse arrival time: %v", err)
+				log.Infof("unable to parse arrival time: %v", err)
 				continue
 			}
 
 			dep, err := gtfsTime(stopDeparture.Date, stopDeparture.Departure)
 			if err != nil {
-				log.Printf("unable to parse departure time: %v", err)
+				log.Infof("unable to parse departure time: %v", err)
 				continue
 			}
 
@@ -106,13 +106,13 @@ func getDeparturesForStopsHandler(queries *storage.Queries) http.HandlerFunc {
 		for _, stopDeparture := range stopDepartures {
 			arv, err := gtfsTime(stopDeparture.Date, stopDeparture.Arrival)
 			if err != nil {
-				log.Printf("unable to parse arrival time: %v", err)
+				log.Infof("unable to parse arrival time: %v", err)
 				continue
 			}
 
 			dep, err := gtfsTime(stopDeparture.Date, stopDeparture.Departure)
 			if err != nil {
-				log.Printf("unable to parse departure time: %v", err)
+				log.Infof("unable to parse departure time: %v", err)
 				continue
 			}
 
@@ -140,6 +140,5 @@ func getDeparturesForStopsHandler(queries *storage.Queries) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(departures)
-
 	}
 }

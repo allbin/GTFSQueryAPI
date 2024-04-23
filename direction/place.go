@@ -2,14 +2,15 @@ package direction
 
 import (
 	"encoding/json"
-	"github.com/allbin/gtfsQueryGoApi/config"
-	"github.com/allbin/gtfsQueryGoApi/geocode"
-	"github.com/allbin/gtfsQueryGoApi/query"
-	geo "github.com/martinlindhe/google-geolocate"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/allbin/gtfsQueryGoApi/config"
+	"github.com/allbin/gtfsQueryGoApi/geocode"
+	"github.com/allbin/gtfsQueryGoApi/query"
+	"github.com/charmbracelet/log"
+	geo "github.com/martinlindhe/google-geolocate"
 )
 
 func PlaceHandler(repo *query.Repository, w http.ResponseWriter, r *http.Request, d config.DefaultConfiguration, geo *geo.GoogleGeo) {

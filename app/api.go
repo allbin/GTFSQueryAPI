@@ -2,14 +2,15 @@ package app
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/allbin/gtfsQueryGoApi/config"
 	"github.com/allbin/gtfsQueryGoApi/direction"
+	"github.com/allbin/gtfsQueryGoApi/middleware"
 	"github.com/allbin/gtfsQueryGoApi/query"
 	"github.com/allbin/gtfsQueryGoApi/v2/api"
+	"github.com/charmbracelet/log"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	geo "github.com/martinlindhe/google-geolocate"
@@ -35,12 +36,21 @@ func Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	log.SetFormatter(log.JSONFormatter)
+
 	err := repo.Connect(conf.Database)
 	if err != nil {
 		panic(err)
 	}
-	log.Print("Server up and running...")
+	log.Info("Connected to database",
+		"host", conf.Database.Host,
+		"port", conf.Database.Port,
+		"database", conf.Database.Database,
+		"user", conf.Database.User,
+	)
+
 	r := mux.NewRouter()
+	r.Use(middleware.Logging)
 	r.Use(commonMiddleware)
 	r.HandleFunc("/departures/place", placeHandler).Methods("GET")
 
@@ -52,6 +62,8 @@ func Run() {
 	defer v2Api.Close(ctx)
 
 	corsAllowedOrigins := handlers.AllowedOrigins([]string{"*"})
+
+	log.Info("Server up and running on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(corsAllowedOrigins)(r)))
 }
 

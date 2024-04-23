@@ -3,9 +3,10 @@ package direction
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
+
+	"github.com/charmbracelet/log"
 
 	"github.com/allbin/gtfsQueryGoApi/query"
 	"github.com/allbin/gtfsQueryGoApi/time_processing"
