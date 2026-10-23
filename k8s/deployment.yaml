@@ -27,14 +27,37 @@ spec:
           envFrom:
             - secretRef:
                 name: go-gtfs-query-api-secrets
-        - image: gcr.io/cloudsql-docker/gce-proxy
+        - image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.26.3
           name: cloudsql-proxy
           command:
             [
-              "/cloud_sql_proxy",
-              "-instances=allbinary-204807:europe-west3:transport-gtfs=tcp:5432",
-              "-credential_file=/secrets/cloudsql/credentials.json",
+              "/cloud-sql-proxy",
+              "--credentials-file=/secrets/cloudsql/credentials.json",
+              "--structured-logs",
+              "--port=5432",
+              "--health-check",
+              "--http-address=0.0.0.0",
+              "--http-port=9090",
+              "allbinary-204807:europe-west3:transport-gtfs",
             ]
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: 9090
+            periodSeconds: 1
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 9090
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 9090
+            periodSeconds: 10
+            failureThreshold: 3
           securityContext:
             runAsUser: 2
             allowPrivilegeEscalation: false
