@@ -1,7 +1,7 @@
 # Dockerfile References: https://docs.docker.com/engine/reference/builder/
 
 # Start from the latest golang base image
-FROM golang:alpine as builder
+FROM golang:1.27-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.g
 
 
 ######## Start a new stage from scratch #######
-FROM alpine:latest
+FROM alpine:3.22
 
 RUN apk --no-cache add ca-certificates
 RUN apk --no-cache add tzdata
