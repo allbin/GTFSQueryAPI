@@ -7,6 +7,7 @@ import (
 
 	"github.com/allbin/gtfsQueryGoApi/config"
 	"github.com/allbin/gtfsQueryGoApi/direction"
+	"github.com/allbin/gtfsQueryGoApi/health"
 	"github.com/allbin/gtfsQueryGoApi/middleware"
 	"github.com/allbin/gtfsQueryGoApi/query"
 	"github.com/allbin/gtfsQueryGoApi/v2/api"
@@ -52,6 +53,7 @@ func Run() {
 	r := mux.NewRouter()
 	r.Use(middleware.Logging)
 	r.Use(commonMiddleware)
+	r.HandleFunc("/health", health.Handler).Methods("GET")
 	r.HandleFunc("/departures/place", placeHandler).Methods("GET")
 
 	v2Router := r.PathPrefix("/api/v2").Subrouter()
